@@ -9,11 +9,11 @@ export default class ScatterPlotInner extends Component {
   }
 
   drawChart = anomalyData => {
-    const { width, height } = this.props;
+    const { width, height, tickFormat } = this.props;
     var margin = {
         top: 10,
         right: 20,
-        bottom: 30,
+        bottom: 50,
         left: 50
       },
       innerWidth = width - margin.left - margin.right,
@@ -21,9 +21,30 @@ export default class ScatterPlotInner extends Component {
       idleTimeout,
       idleDelay = 350;
 
+    var formatMillisecond = d3.timeFormat(".%L"),
+      formatSecond = d3.timeFormat(":%S"),
+      formatMinute = d3.timeFormat("%m/%d, %I:%M%p"),
+      formatHour = d3.timeFormat("%m/%d, %I:%M%p"),
+      // formatDay = d3.timeFormat("%a %d"),
+      // formatWeek = d3.timeFormat("%b %d"),
+      formatStandard = d3.timeFormat("%m/%d/%Y");
+    // formatYear = d3.timeFormat("%Y")
+
+    function multiFormat(date) {
+      return (d3.timeSecond(date) < date
+        ? formatMillisecond
+        : d3.timeMinute(date) < date
+        ? formatSecond
+        : d3.timeHour(date) < date
+        ? formatMinute
+        : d3.timeDay(date) < date
+        ? formatHour
+        : formatStandard)(date);
+    }
+
     var x = d3.scaleTime().range([0, innerWidth]);
     var y = d3.scaleLinear().range([innerHeight, 0]);
-    var xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d, %y"));
+    var xAxis = d3.axisBottom(x).tickFormat(multiFormat);
     var yAxis = d3.axisLeft(y);
     var div = d3
       .select("#scatterPlotSvg")
@@ -131,7 +152,7 @@ export default class ScatterPlotInner extends Component {
         return y(d.y);
       })
       .style("fill", function(d) {
-        return d.anomaly ? "red" : "blue";
+        return d.color;
       });
     //   .on("click", function() {})
     //   .on("mouseover", function(d) {

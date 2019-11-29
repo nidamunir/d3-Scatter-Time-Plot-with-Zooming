@@ -13,9 +13,8 @@ export const mapAnomalyData = anomalyData => {
     acc.push({
       x: moment(timestamp).toDate(),
       y: byteToGigaByte(bytes),
-      anomaly
+      color: anomaly ? "red" : "blue"
     });
-    // }
     return acc;
   }, []);
 };
@@ -23,6 +22,13 @@ export const mapAnomalyData = anomalyData => {
 export default class ScatterPlot extends Component {
   render() {
     const data = mapAnomalyData(anomalies);
-    return <ScatterPlotInner data={data} width={1000} height={600} />;
+    return (
+      <ScatterPlotInner
+        data={data}
+        width={1000}
+        height={600}
+        tickFormat="%b %d, %y"
+      />
+    );
   }
 }
