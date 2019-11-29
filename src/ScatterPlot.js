@@ -27,7 +27,7 @@ export default class ScatterPlot extends Component {
         data={data}
         width={1000}
         height={600}
-        tickFormat="%b %d, %y"
+        // tickFormat="%b %d, %y"
       />
     );
   }

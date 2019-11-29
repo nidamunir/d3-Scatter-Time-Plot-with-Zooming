@@ -8,6 +8,39 @@ export default class ScatterPlotInner extends Component {
     this.drawChart(data);
   }
 
+  multiFormat = date => {
+    const formatMillisecond = d3.timeFormat(".%L");
+    const formatSecond = d3.timeFormat(":%S");
+    const formatDateTime = d3.timeFormat("%m/%d, %I:%M%p");
+    // const formatHour = d3.timeFormat("%m/%d, %I:%M%p");
+    const formatStandard = d3.timeFormat("%m/%d/%Y");
+    // return (d3.timeSecond(date) < date
+    //   ? formatMillisecond
+    //   : d3.timeMinute(date) < date
+    //   ? formatSecond
+    //   : d3.timeHour(date) < date
+    //   ? formatMinute
+    //   : d3.timeDay(date) < date
+    //   ? formatHour
+    //   : formatStandard)(date);
+
+    return (d3.timeSecond(date) < date
+      ? formatMillisecond
+      : d3.timeMinute(date) < date
+      ? formatSecond
+      : d3.timeHour(date) < date
+      ? formatDateTime
+      : d3.timeDay(date) < date
+      ? formatDateTime
+      : d3.timeMonth(date) < date
+      ? d3.timeWeek(date) < date
+        ? formatStandard
+        : formatDateTime
+      : d3.timeYear(date) < date
+      ? formatStandard
+      : formatStandard)(date);
+  };
+
   drawChart = anomalyData => {
     const { width, height, tickFormat } = this.props;
     var margin = {
@@ -21,30 +54,11 @@ export default class ScatterPlotInner extends Component {
       idleTimeout,
       idleDelay = 350;
 
-    var formatMillisecond = d3.timeFormat(".%L"),
-      formatSecond = d3.timeFormat(":%S"),
-      formatMinute = d3.timeFormat("%m/%d, %I:%M%p"),
-      formatHour = d3.timeFormat("%m/%d, %I:%M%p"),
-      // formatDay = d3.timeFormat("%a %d"),
-      // formatWeek = d3.timeFormat("%b %d"),
-      formatStandard = d3.timeFormat("%m/%d/%Y");
-    // formatYear = d3.timeFormat("%Y")
-
-    function multiFormat(date) {
-      return (d3.timeSecond(date) < date
-        ? formatMillisecond
-        : d3.timeMinute(date) < date
-        ? formatSecond
-        : d3.timeHour(date) < date
-        ? formatMinute
-        : d3.timeDay(date) < date
-        ? formatHour
-        : formatStandard)(date);
-    }
-
     var x = d3.scaleTime().range([0, innerWidth]);
     var y = d3.scaleLinear().range([innerHeight, 0]);
-    var xAxis = d3.axisBottom(x).tickFormat(multiFormat);
+    var xAxis = d3
+      .axisBottom(x)
+      .tickFormat(tickFormat ? d3.timeFormat(tickFormat) : this.multiFormat);
     var yAxis = d3.axisLeft(y);
     var div = d3
       .select("#scatterPlotSvg")
