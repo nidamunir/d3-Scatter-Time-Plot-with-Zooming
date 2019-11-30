@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ScatterPlotInner from "./ScatterPlotInner2";
-import { anomalies } from "./anomalies";
+import { anomalies } from "../anomalies";
 import * as moment from "moment";
 import ReactTooltip from "react-tooltip";
 
