@@ -1,46 +1,61 @@
 import React, { Component } from "react";
-import * as d3 from "d3";
-import * as moment from "moment";
-
+import { scaleLinear, scaleTime } from "d3-scale";
+import { axisBottom, axisLeft } from "d3-axis";
+import { select } from "d3-selection";
+import { timeFormat } from "d3-time-format";
+import {
+  timeSecond,
+  timeMinute,
+  timeHour,
+  timeDay,
+  timeMonth,
+  timeYear,
+  timeWeek
+} from "d3-time";
+import { extent } from "d3-array";
 export default class ScatterPlotInner extends Component {
+  state = {
+    tooltip: ""
+  };
   componentDidMount() {
     const { data } = this.props;
     this.drawChart(data);
   }
 
   multiFormat = date => {
-    const formatMillisecond = d3.timeFormat(".%L");
-    const formatSecond = d3.timeFormat(":%S");
-    const formatDateTime = d3.timeFormat("%m/%d, %I:%M%p");
-    // const formatHour = d3.timeFormat("%m/%d, %I:%M%p");
-    const formatStandard = d3.timeFormat("%m/%d/%Y");
-    // return (d3.timeSecond(date) < date
-    //   ? formatMillisecond
-    //   : d3.timeMinute(date) < date
-    //   ? formatSecond
-    //   : d3.timeHour(date) < date
-    //   ? formatMinute
-    //   : d3.timeDay(date) < date
-    //   ? formatHour
-    //   : formatStandard)(date);
+    const formatMillisecond = timeFormat(".%L");
+    const formatSecond = timeFormat(":%S");
+    const formatDateTime = timeFormat("%m/%d, %I:%M%p");
+    const formatStandard = timeFormat("%m/%d/%Y");
 
-    return (d3.timeSecond(date) < date
+    return (timeSecond(date) < date
       ? formatMillisecond
-      : d3.timeMinute(date) < date
+      : timeMinute(date) < date
       ? formatSecond
-      : d3.timeHour(date) < date
+      : timeHour(date) < date
       ? formatDateTime
-      : d3.timeDay(date) < date
+      : timeDay(date) < date
       ? formatDateTime
-      : d3.timeMonth(date) < date
-      ? d3.timeWeek(date) < date
+      : timeMonth(date) < date
+      ? timeWeek(date) < date
         ? formatStandard
         : formatDateTime
-      : d3.timeYear(date) < date
+      : timeYear(date) < date
       ? formatStandard
       : formatStandard)(date);
   };
 
+  mouseOver = (data, index, elements, test2) => {
+    console.log(select(index), index);
+    this.setState({ tooltip: data.x });
+  };
+  mouseMove = data => {
+    // console.log("mousemove", data);
+  };
+
+  mouseOut = data => {
+    console.log("mouseout", data);
+  };
   drawChart = anomalyData => {
     const { width, height, tickFormat } = this.props;
     var margin = {
@@ -54,17 +69,16 @@ export default class ScatterPlotInner extends Component {
       idleTimeout,
       idleDelay = 350;
 
-    var x = d3.scaleTime().range([0, innerWidth]);
-    var y = d3.scaleLinear().range([innerHeight, 0]);
-    var xAxis = d3
-      .axisBottom(x)
-      .tickFormat(tickFormat ? d3.timeFormat(tickFormat) : this.multiFormat);
-    var yAxis = d3.axisLeft(y);
-    var div = d3
-      .select("#scatterPlotSvg")
+    var x = scaleTime().range([0, innerWidth]);
+    var y = scaleLinear().range([innerHeight, 0]);
+    var xAxis = axisBottom(x).tickFormat(
+      tickFormat ? timeFormat(tickFormat) : this.multiFormat
+    );
+    var yAxis = axisLeft(y);
+    var div = select("#scatterPlotSvg")
       .append("div")
       .attr("class", "legend");
-    var brush = d3.brush().on("end", brushended);
+    var brush = brush().on("end", brushended);
     var svg = div
       .append("svg")
       .attr("class", "scatter")
@@ -72,10 +86,10 @@ export default class ScatterPlotInner extends Component {
       .attr("height", innerHeight + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    var x0 = d3.extent(anomalyData, function(d) {
+    var x0 = extent(anomalyData, function(d) {
       return d.x;
     });
-    var y0 = d3.extent(anomalyData, function(d) {
+    var y0 = extent(anomalyData, function(d) {
       return d.y;
     });
     x.domain(x0).nice();
@@ -101,7 +115,7 @@ export default class ScatterPlotInner extends Component {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     function brushended() {
-      var s = d3.event.selection;
+      var s = event.selection;
       if (!s) {
         if (!idleTimeout) return (idleTimeout = setTimeout(idled, idleDelay));
         x.domain(x0);
@@ -150,6 +164,7 @@ export default class ScatterPlotInner extends Component {
       .attr("height", innerHeight);
 
     var circlegroup = svg.append("g");
+    // .attr("dataTip", "ddasa")
 
     circlegroup.attr("clip-path", "url(#clip)");
     circlegroup
@@ -160,40 +175,45 @@ export default class ScatterPlotInner extends Component {
       .attr("class", "dot")
       .attr("r", 5)
       .attr("cx", function(d) {
+        // console.log("d.x", d);
         return x(d.x);
       })
       .attr("cy", function(d) {
         return y(d.y);
       })
+      .attr("data-tip", "helloworld")
+      .attr("data-for", "tooltip")
       .style("fill", function(d) {
         return d.color;
-      });
-    //   .on("click", function() {})
-    //   .on("mouseover", function(d) {
-    //     return TimeScatterPlot.getTooltip()
-    //       .style("visibility", "visible")
-    //       .text(function() {
-    //         return d.x + " bytes: " + d.bytes + ", article: " + d.desc;
-    //       });
-    //   })
-    //   .on("mousemove", function() {
-    //     var event = d3.event;
-    //     return TimeScatterPlot.getTooltip()
-    //       .style("top", event.pageY + "px")
-    //       .style("left", event.pageX + 10 + "px");
-    //   })
-    //   .on("mouseout", function() {
-    //     return TimeScatterPlot.getTooltip().style("visibility", "hidden");
-    //   })
+      })
+      //   .on("click", function() {})
+      .on("mouseover", function(d, i) {})
+      .on("mousemove", this.mouseMove)
+      .on("mouseout", this.mouseOut);
+    // function(d) {
+    //   return TimeScatterPlot.getTooltip()
+    //     .style("visibility", "visible")
+    //     .text(function() {
+    //       return d.x + " bytes: " + d.bytes + ", article: " + d.desc;
+    //     });
+    // }
+
+    // .on("mousemove", function() {
+    //   var event = event;
+    //   return TimeScatterPlot.getTooltip()
+    //     .style("top", event.pageY + "px")
+    //     .style("left", event.pageX + 10 + "px");
+    // })
+    // .on("mouseout", function() {
+    //   return TimeScatterPlot.getTooltip().style("visibility", "hidden");
+    // });
     //   .on("click", this.drawChart);
   };
-
   render() {
+    const { tooltip } = this.state;
     return (
       <div>
-        <div id="scatterPlotSvg">
-          <svg />
-        </div>
+        <div id="scatterPlotSvg"></div>
       </div>
     );
   }
