@@ -1,81 +1,56 @@
+// lib
 import React, { Component } from "react";
 import * as d3 from "d3";
 import { scaleLinear, scaleTime } from "d3-scale";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select, selectAll } from "d3-selection";
 import { timeFormat } from "d3-time-format";
-import {
-  timeSecond,
-  timeMinute,
-  timeHour,
-  timeDay,
-  timeMonth,
-  timeYear
-} from "d3-time";
 import { extent } from "d3-array";
 
-const getAxes = (width, height, tickFormat) => {
-  var margin = {
-      top: 10,
-      right: 20,
-      bottom: 50,
-      left: 50
-    },
-    innerWidth = width - margin.left - margin.right,
-    innerHeight = height - margin.top - margin.bottom;
-  var x = scaleTime().range([0, innerWidth]);
-  var y = scaleLinear().range([innerHeight, 0]);
-  var xAxis = axisBottom(x).tickFormat(
-    tickFormat ? timeFormat(tickFormat) : multiFormat
-  );
-  var yAxis = axisLeft(y);
-  return { x, y, xAxis, yAxis };
+// src
+import { multiFormat } from "./utils";
+
+const margin = {
+  top: 10,
+  right: 20,
+  bottom: 50,
+  left: 50
 };
 
-const multiFormat = date => {
-  const formatMillisecond = timeFormat(".%L");
-  const formatSecond = timeFormat(":%S");
-  const formatDateTime = timeFormat("%m/%d, %I:%M%p");
-  // const formatHour = d3.timeFormat("%m/%d, %I:%M%p");
-  const formatStandard = timeFormat("%m/%d/%Y");
-  // return (d3.timeSecond(date) < date
-  //   ? formatMillisecond
-  //   : d3.timeMinute(date) < date
-  //   ? formatSecond
-  //   : d3.timeHour(date) < date
-  //   ? formatMinute
-  //   : d3.timeDay(date) < date
-  //   ? formatHour
-  //   : formatStandard)(date);
-
-  return (timeSecond(date) < date
-    ? formatMillisecond
-    : timeMinute(date) < date
-    ? formatSecond
-    : timeHour(date) < date
-    ? formatDateTime
-    : timeDay(date) < date
-    ? formatDateTime
-    : timeMonth(date) < date
-    ? formatStandard
-    : timeYear(date) < date
-    ? formatStandard
-    : formatStandard)(date);
-};
+// const getAxes = (width, height, tickFormat) => {
+//   const innerWidth = width - margin.left - margin.right;
+//   const innerHeight = height - margin.top - margin.bottom;
+//   var x = scaleTime().range([0, innerWidth]);
+//   var y = scaleLinear().range([innerHeight, 0]);
+//   var xAxis = axisBottom(x).tickFormat(
+//     tickFormat ? timeFormat(tickFormat) : multiFormat
+//   );
+//   var yAxis = axisLeft(y);
+//   return { x, y, xAxis, yAxis };
+// };
 
 export default class ScatterPlotInner extends Component {
   state = {
     idleDelay: 350,
     idleTimeout: null,
-    x: null,
-    y: null
+    x: scaleTime().range([0, 600]),
+    y: scaleLinear().range([600, 0])
   };
 
   componentDidMount() {
+    console.log("did mount");
     const { width, height, tickFormat, data } = this.props;
-    const { x, y, xAxis, yAxis } = getAxes(width, height, tickFormat);
+    // const { x, y, xAxis, yAxis } = getAxes(width, height, tickFormat);
     const brush = d3.brush().on("end", this.brushended);
 
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    const x = scaleTime().range([0, innerWidth]);
+    const y = scaleLinear().range([innerHeight, 0]);
+    const xAxis = axisBottom(x).tickFormat(
+      tickFormat ? timeFormat(tickFormat) : multiFormat
+    );
+    const yAxis = axisLeft(y);
     x.domain(extent(data, d => d.x)).nice();
     y.domain(extent(data, d => d.y)).nice();
 
@@ -87,7 +62,7 @@ export default class ScatterPlotInner extends Component {
     d3.select(this.refs.yAxis).call(yAxis);
     select(this.refs.brush).call(brush);
 
-    this.setState({ x, y });
+    this.setState({ x, y, xAxis, yAxis });
   }
 
   brushended = () => {
@@ -117,6 +92,7 @@ export default class ScatterPlotInner extends Component {
       tickFormat ? timeFormat(tickFormat) : multiFormat
     );
     var yAxis = axisLeft(y);
+    // Zooming
     const t = select("svg")
       .transition()
       .duration(750);
@@ -138,43 +114,18 @@ export default class ScatterPlotInner extends Component {
       });
   };
 
-  idled = () => {
-    this.setState({ idleTimeout: null });
-  };
-
   render() {
+    console.log("render");
     const { width, height, data } = this.props;
-    var margin = {
-        top: 10,
-        right: 20,
-        bottom: 50,
-        left: 50
-      },
-      innerWidth = width - margin.left - margin.right,
-      innerHeight = height - margin.top - margin.bottom;
-
-    var x = scaleTime().range([0, innerWidth]);
-    var y = scaleLinear().range([innerHeight, 0]);
-
-    var x0 = extent(data, function(d) {
-      return d.x;
-    });
-    var y0 = extent(data, function(d) {
-      return d.y;
-    });
-    x.domain(x0).nice();
-    y.domain(y0).nice();
+    const { x, y } = this.state;
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
 
     return (
       <div>
         <div id="scatterPlotSvg">
-          {/* <svg> */}
           <div className="legend">
-            <svg
-              className="scatter"
-              width={innerWidth + margin.left + margin.right}
-              height={innerHeight + margin.top + margin.bottom}
-            >
+            <svg className="scatter" width={width} height={height}>
               <g
                 transform={"translate(" + margin.left + "," + margin.top + ")"}
               >
@@ -223,7 +174,6 @@ export default class ScatterPlotInner extends Component {
               </g>
             </svg>
           </div>
-          {/* </svg> */}
         </div>
       </div>
     );

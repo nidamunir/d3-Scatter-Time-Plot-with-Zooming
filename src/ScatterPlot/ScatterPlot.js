@@ -1,29 +1,16 @@
+// lib
 import React, { Component } from "react";
-import ScatterPlotInner from "./ScatterPlotInner2";
-import { anomalies } from "../anomalies";
-import * as moment from "moment";
 import ReactTooltip from "react-tooltip";
 
-const byteToGigaByte = n => {
-  return n / Math.pow(10, 9);
-};
-
-export const mapAnomalyData = anomalyData => {
-  return anomalyData.reduce((acc, current) => {
-    const { timestamp, bytes, anomaly } = current;
-    acc.push({
-      x: moment(timestamp).toDate(),
-      y: byteToGigaByte(bytes),
-      color: anomaly ? "red" : "blue"
-    });
-    return acc;
-  }, []);
-};
+// src
+import ScatterPlotInner from "./ScatterPlotInner2";
+import { mapAnomalyData } from "./utils";
+import { anomalies } from "../anomalies";
 
 export default class ScatterPlot extends Component {
-  componentDidUpdate() {
-    ReactTooltip.rebuild();
-  }
+  // componentDidUpdate() {
+  //   ReactTooltip.rebuild();
+  // }
   render() {
     const data = mapAnomalyData(anomalies);
     return (
