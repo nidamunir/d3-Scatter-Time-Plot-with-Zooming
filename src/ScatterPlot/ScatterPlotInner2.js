@@ -66,8 +66,8 @@ export default class ScatterPlotInner extends Component {
   }
 
   brushended = () => {
-    let { idleTimeout, idleDelay, x, y } = this.state;
-    const { data, tickFormat } = this.props;
+    let { idleTimeout, idleDelay, x, y, xAxis, yAxis } = this.state;
+    const { data } = this.props;
     const {
       event: { selection }
     } = d3;
@@ -88,10 +88,6 @@ export default class ScatterPlotInner extends Component {
       select(".brush").call(d3.brush().move, null);
     }
 
-    var xAxis = axisBottom(x).tickFormat(
-      tickFormat ? timeFormat(tickFormat) : multiFormat
-    );
-    var yAxis = axisLeft(y);
     // Zooming
     const t = select("svg")
       .transition()
@@ -165,7 +161,6 @@ export default class ScatterPlotInner extends Component {
                       r={5}
                       cx={x(d.x)}
                       cy={y(d.y)}
-                      onMouseOver={() => console.log("mouse over")}
                       data-tip={d.x}
                       style={{ fill: d.color }}
                     ></circle>
