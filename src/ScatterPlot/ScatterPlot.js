@@ -1,6 +1,6 @@
 // lib
 import React, { Component } from "react";
-import ReactTooltip from "react-tooltip";
+import moment from "moment";
 
 // src
 import ScatterPlotInner from "./ScatterPlotInner2";
@@ -8,34 +8,23 @@ import { mapAnomalyData } from "./utils";
 import { anomalies } from "../anomalies";
 
 export default class ScatterPlot extends Component {
-  // componentDidUpdate() {
-  //   ReactTooltip.rebuild();
-  // }
   render() {
     const data = mapAnomalyData(anomalies);
     return (
       <React.Fragment>
-        <ReactTooltip
-        //   id="tooltip"
-        //   getContent={datumAsText => {
-        //     console.log("text", datumAsText);
-        //     if (datumAsText == null) {
-        //       return;
-        //     }
-        //     let d = JSON.parse(datumAsText);
-        //     return (
-        //       <div>
-        //         <p>ID: {d.id}</p>
-        //         <p>Category: {d.category}</p>
-        //       </div>
-        //     );
-        //   }}
-        />
         <ScatterPlotInner
           data={data}
           width={1000}
           height={600}
           // tickFormat="%b %d, %y"
+          yAxisLabel="GB"
+          xAxisLabel="Date"
+          tooltipFormatter={d =>
+            `<div>
+            <span>${moment(d.x).format("MMM DD YYYY, hh:mma")}</span></br>
+            <span>${d.y.toFixed(2)} GB</span>
+          </div>`
+          }
         />
       </React.Fragment>
     );

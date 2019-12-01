@@ -28,9 +28,9 @@ export const mapAnomalyData = anomalyData => {
 export const multiFormat = date => {
   const formatMillisecond = timeFormat(".%L");
   const formatSecond = timeFormat(":%S");
-  const formatDateTime = timeFormat("%m/%d, %I:%M%p");
+  const formatDateTime = timeFormat("%I:%M%p");
   // const formatHour = d3.timeFormat("%m/%d, %I:%M%p");
-  const formatStandard = timeFormat("%m/%d/%Y");
+  const formatStandard = timeFormat("%m/%d");
   // return (d3.timeSecond(date) < date
   //   ? formatMillisecond
   //   : d3.timeMinute(date) < date
@@ -55,3 +55,9 @@ export const multiFormat = date => {
     ? formatStandard
     : formatStandard)(date);
 };
+
+export const formatTooltip = d =>
+  `<div>
+    <span>${d.x}</span></br>
+    <span>${d.y}</span>
+  </div>`;

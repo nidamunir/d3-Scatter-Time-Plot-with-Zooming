@@ -6,9 +6,10 @@ import { axisBottom, axisLeft } from "d3-axis";
 import { select, selectAll } from "d3-selection";
 import { timeFormat } from "d3-time-format";
 import { extent } from "d3-array";
+import ReactTooltip from "react-tooltip";
 
 // src
-import { multiFormat } from "./utils";
+import { multiFormat, formatTooltip } from "./utils";
 
 const margin = {
   top: 10,
@@ -16,18 +17,6 @@ const margin = {
   bottom: 50,
   left: 50
 };
-
-// const getAxes = (width, height, tickFormat) => {
-//   const innerWidth = width - margin.left - margin.right;
-//   const innerHeight = height - margin.top - margin.bottom;
-//   var x = scaleTime().range([0, innerWidth]);
-//   var y = scaleLinear().range([innerHeight, 0]);
-//   var xAxis = axisBottom(x).tickFormat(
-//     tickFormat ? timeFormat(tickFormat) : multiFormat
-//   );
-//   var yAxis = axisLeft(y);
-//   return { x, y, xAxis, yAxis };
-// };
 
 export default class ScatterPlotInner extends Component {
   state = {
@@ -40,7 +29,6 @@ export default class ScatterPlotInner extends Component {
   componentDidMount() {
     console.log("did mount");
     const { width, height, tickFormat, data } = this.props;
-    // const { x, y, xAxis, yAxis } = getAxes(width, height, tickFormat);
     const brush = d3.brush().on("end", this.brushended);
 
     const innerWidth = width - margin.left - margin.right;
@@ -55,10 +43,9 @@ export default class ScatterPlotInner extends Component {
     y.domain(extent(data, d => d.y)).nice();
 
     selectAll("circle").data(data);
-    select(this.refs.xAxis)
-      .call(xAxis)
-      .selectAll("text")
-      .attr("transform", "rotate(-40)");
+    select(this.refs.xAxis).call(xAxis);
+    // .selectAll("g.tick text")
+    // .attr("transform", "rotate(-40)");
     d3.select(this.refs.yAxis).call(yAxis);
     select(this.refs.brush).call(brush);
 
@@ -94,9 +81,9 @@ export default class ScatterPlotInner extends Component {
       .duration(750);
     select(".axis--x")
       .transition(t)
-      .call(xAxis)
-      .selectAll("text")
-      .attr("transform", "rotate(-40)");
+      .call(xAxis);
+    // .selectAll("g.tick text")
+    // .attr("transform", "rotate(-40)");
     select(".axis--y")
       .transition(t)
       .call(yAxis);
@@ -112,13 +99,22 @@ export default class ScatterPlotInner extends Component {
 
   render() {
     console.log("render");
-    const { width, height, data } = this.props;
+    const {
+      width,
+      height,
+      data,
+      yAxisLabel,
+      xAxisLabel,
+      tooltipFormatter = formatTooltip
+    } = this.props;
     const { x, y } = this.state;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
     return (
       <div>
+        <ReactTooltip multiline type="light" effect="float" html />
+
         <div id="scatterPlotSvg">
           <div className="legend">
             <svg className="scatter" width={width} height={height}>
@@ -129,16 +125,32 @@ export default class ScatterPlotInner extends Component {
                   className={["axis", "axis--x"].join(" ")}
                   transform={"translate(0," + innerHeight + ")"}
                   ref="xAxis"
-                  //   ref={node => select(node).call(axisLeft(y))}
-                ></g>
-                {/* call(xAxis) .selectAll("text") .attr("transform", "rotate(-40)"); //
-          .style("text-anchor", "start"); */}
-                <g
-                  // transform={"translate(" + innerHeight + ", 0)"}
-                  className={["axis", "axis--y"].join(" ")}
-                  ref="yAxis"
-                  // call yaxis
-                ></g>
+                >
+                  <text
+                    className="x-label"
+                    textAnchor="middle"
+                    fill="black"
+                    transform={"translate(" + innerWidth / 2 + ", " + 35 + ")"}
+                  >
+                    {xAxisLabel}
+                  </text>
+                </g>
+                <g className={["axis", "axis--y"].join(" ")} ref="yAxis">
+                  <text
+                    className="y-label"
+                    textAnchor="middle"
+                    fill="black"
+                    transform={
+                      "translate(" +
+                      -30 +
+                      ", " +
+                      innerHeight / 2 +
+                      ") rotate(-90)"
+                    }
+                  >
+                    {yAxisLabel}
+                  </text>
+                </g>
                 {/* svg .append("g") .attr("class", "brush") .call(brush) .append("g")
               .attr("transform",); */}
                 <g className="brush" ref="brush">
@@ -161,7 +173,7 @@ export default class ScatterPlotInner extends Component {
                       r={5}
                       cx={x(d.x)}
                       cy={y(d.y)}
-                      data-tip={d.x}
+                      data-tip={tooltipFormatter(d)}
                       style={{ fill: d.color }}
                     ></circle>
                   ))}
