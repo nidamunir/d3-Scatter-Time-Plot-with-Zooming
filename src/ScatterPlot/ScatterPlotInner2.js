@@ -5,6 +5,7 @@ import { scaleLinear, scaleTime } from "d3-scale";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select, selectAll } from "d3-selection";
 import { timeFormat } from "d3-time-format";
+import { brush } from "d3-brush";
 import { extent } from "d3-array";
 import ReactTooltip from "react-tooltip";
 
@@ -29,7 +30,6 @@ export default class ScatterPlotInner extends Component {
   componentDidMount() {
     console.log("did mount");
     const { width, height, tickFormat, data } = this.props;
-    const brush = d3.brush().on("end", this.brushended);
 
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -46,8 +46,8 @@ export default class ScatterPlotInner extends Component {
     select(this.refs.xAxis).call(xAxis);
     // .selectAll("g.tick text")
     // .attr("transform", "rotate(-40)");
-    d3.select(this.refs.yAxis).call(yAxis);
-    select(this.refs.brush).call(brush);
+    select(this.refs.yAxis).call(yAxis);
+    select(this.refs.brush).call(brush().on("end", this.brushended));
 
     this.setState({ x, y, xAxis, yAxis });
   }
@@ -72,7 +72,7 @@ export default class ScatterPlotInner extends Component {
     } else {
       x.domain([selection[0][0], selection[1][0]].map(x.invert, x));
       y.domain([selection[1][1], selection[0][1]].map(y.invert, y));
-      select(".brush").call(d3.brush().move, null);
+      select(".brush").call(brush().move, null);
     }
 
     // Zooming
