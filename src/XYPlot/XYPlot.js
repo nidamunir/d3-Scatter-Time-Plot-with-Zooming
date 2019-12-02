@@ -19,7 +19,7 @@ const margin = {
   left: 50
 };
 
-export default class ScatterPlotInner extends Component {
+export class XYPlot extends Component {
   state = {
     idleDelay: 350,
     idleTimeout: null,
@@ -28,11 +28,11 @@ export default class ScatterPlotInner extends Component {
   };
 
   componentDidMount() {
-    console.log("did mount");
     const { width, height, tickFormat, data } = this.props;
 
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+
     const x = scaleTime().range([0, innerWidth]);
     const y = scaleLinear().range([innerHeight, 0]);
     const xAxis = axisBottom(x).tickFormat(
@@ -44,8 +44,6 @@ export default class ScatterPlotInner extends Component {
 
     selectAll("circle").data(data);
     select(this.refs.xAxis).call(xAxis);
-    // .selectAll("g.tick text")
-    // .attr("transform", "rotate(-40)");
     select(this.refs.yAxis).call(yAxis);
     select(this.refs.brush).call(brush().on("end", this.brushended));
 
@@ -82,8 +80,6 @@ export default class ScatterPlotInner extends Component {
     select(".axis--x")
       .transition(t)
       .call(xAxis);
-    // .selectAll("g.tick text")
-    // .attr("transform", "rotate(-40)");
     select(".axis--y")
       .transition(t)
       .call(yAxis);
@@ -98,7 +94,6 @@ export default class ScatterPlotInner extends Component {
   };
 
   render() {
-    console.log("render");
     const {
       width,
       height,
@@ -112,7 +107,7 @@ export default class ScatterPlotInner extends Component {
     const innerHeight = height - margin.top - margin.bottom;
 
     return (
-      <div>
+      <React.Fragment>
         <ReactTooltip multiline type="light" effect="float" html />
 
         <div id="scatterPlotSvg">
@@ -151,8 +146,6 @@ export default class ScatterPlotInner extends Component {
                     {yAxisLabel}
                   </text>
                 </g>
-                {/* svg .append("g") .attr("class", "brush") .call(brush) .append("g")
-              .attr("transform",); */}
                 <g className="brush" ref="brush">
                   <g
                     transform={
@@ -182,7 +175,7 @@ export default class ScatterPlotInner extends Component {
             </svg>
           </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }
