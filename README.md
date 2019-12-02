@@ -1,4 +1,4 @@
-Scatter XY Plot with Date time on x axis.
+Implements Scatter XY Plot with Date time on x axis using d3.
 
 ## Available Scripts
 
