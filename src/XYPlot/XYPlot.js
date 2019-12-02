@@ -1,9 +1,8 @@
 // lib
 import React, { Component } from "react";
-import * as d3 from "d3";
 import { scaleLinear, scaleTime } from "d3-scale";
 import { axisBottom, axisLeft } from "d3-axis";
-import { select, selectAll } from "d3-selection";
+import { select, selectAll, event } from "d3-selection";
 import { timeFormat } from "d3-time-format";
 import { brush } from "d3-brush";
 import { extent } from "d3-array";
@@ -53,9 +52,7 @@ export class XYPlot extends Component {
   brushended = () => {
     let { idleTimeout, idleDelay, x, y, xAxis, yAxis } = this.state;
     const { data } = this.props;
-    const {
-      event: { selection }
-    } = d3;
+    const { selection } = event;
     if (!selection) {
       if (!idleTimeout) {
         this.setState({
